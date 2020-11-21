@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct{
+    int u, v;
+}bow;
+int vertex_cover(int *sol, int n, int e, int size, bow *archi, int *mark, int pos, int count){
+    int i, j, trovato[e], trovatocount=0, norep=0;
+    for(j=0; j<e; j++){trovato[j]=0;}
+    for(i=0; i<size; i++){
+        for(j=0; j<e; j++){
+            if(sol[i]==archi[j].u || sol[i]==archi[j].v){trovato[j]=1;}
+        }
+    }
+    for(i=0; i<e; i++){trovatocount+=trovato[i];}
+    for(i=1; i<size; i++){
+        if(sol[i]>sol[i-1]){norep++;}
+    }
+    if(trovatocount==e && norep==(size-1)) {
+        printf("\nLa soluzione (");
+        for (i = 0; i < size-1; i++) { printf("%d, ", sol[i]); }
+        printf("%d) e' accettabile come vertex cover.", sol[size-1]);
+        count ++;
+    }
+    if(size>=n){return count;}
+    for(i=size; i < n; i++){
+        if(mark[i] ==0) {
+            sol[pos] = i;
+            mark[i] = 1;
+            count=vertex_cover(sol, n, e, size + 1, archi, mark, pos + 1, count);
+            mark[i]=0;
+        }
+    }
+    return count;
+}
+int main() {
+    FILE *fp;
+    int n, e, i, *vett, *mark, count=0;
+    bow *archi;
+    fp=fopen("grafo.txt", "r");
+    if(fp==NULL){
+        fprintf(stderr, "\nIl file non e' stato aperto correttamente\n");
+        exit(0);
+    }
+    fscanf(fp, "%d%d", &n, &e);
+    vett=(int *)malloc(n*sizeof(int));
+    mark=(int *)malloc(n * sizeof(int));
+    archi=(bow *)malloc(e*sizeof(bow));
+    for(i=0; i<e; i++){fscanf(fp, "%d%d", &archi[i].u, &archi[i].v);}
+    fclose(fp);
+    for(i=0; i<n; i++){
+        mark[i]=0;
+    }
+    count=vertex_cover(vett, n, e, 0, archi, mark, 0, count);
+    printf("\nSono stati contati %d vertex cover.\n", count);
+    return 0;
+}
